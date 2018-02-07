@@ -238,6 +238,8 @@ on charger
     wait /dev/block/bootdevice/by-name/persist
     mount ext4 /dev/block/bootdevice/by-name/persist /persist nosuid nodev barrier=1
 
+    mount tmpfs tmpfs /data
+
     # Enable UFS powersaving
     write /sys/devices/soc/1da4000.ufshc/clkscale_enable 1
     write /sys/devices/soc/1da4000.ufshc/clkgate_enable 1
@@ -246,6 +248,8 @@ on charger
     start vendor.thermal-engine
     start vendor.qcom-post-boot
     start vendor.power_off_alarm
+
+    start charger
 
     setprop sys.usb.configfs 1
     setprop sys.usb.config adb
