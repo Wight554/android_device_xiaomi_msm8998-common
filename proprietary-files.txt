@@ -182,6 +182,31 @@ vendor/lib64/liboptizoom.so
 vendor/lib64/libseemore.so
 vendor/lib64/libubifocus.so
 
+# Camera (MIUI)
+lib/libCameraEffectJNI.so
+lib/libblurbuster.so
+lib/libfiltergenerator.so
+lib/libjni_blurbuster.so
+lib/libjni_chromaflash.so
+lib/libjni_dualcamera.so
+lib/libjni_filtergenerator.so
+lib/libjni_hazebuster.so
+lib/libjni_makeupV2.so
+lib/libjni_optizoom.so
+lib/libjni_seestraight.so
+lib/libjni_sharpshooter.so
+lib/libjni_stillmore.so
+lib/libjni_trueportrait.so
+lib/libjni_truescanner_v2.so
+lib/libjni_ubifocus.so
+lib/libmorpho_group_portrait.so
+lib/libmorpho_groupshot.so
+lib/libmorpho_memory_allocator.so
+lib/libmorpho_panorama.so
+lib/libmorpho_panorama_gp.so
+lib/libseestraight.so
+lib/libtruescanner.so
+
 # Camera eeprom
 vendor/lib/libSonyIMX386PdafLibrary.so
 
