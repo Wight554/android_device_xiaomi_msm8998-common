@@ -443,9 +443,9 @@ vendor/lib64/libtida@1.1.so
 # NFC firmware
 vendor/lib/libpn553_fw.so
 
-# Perf - from walleye QP1A.190711.020
-vendor/lib/libqti-perfd-client.so|16816cfdc873a2fdc9467db52bd5f2aaa33d2b50
-vendor/lib64/libqti-perfd-client.so|93c3f90f1b72a21ca325cbb375923b1deba80467
+# Perf
+vendor/lib/libqti-perfd-client.so
+vendor/lib64/libqti-perfd-client.so
 
 # Peripheral manager
 vendor/bin/pm-proxy
