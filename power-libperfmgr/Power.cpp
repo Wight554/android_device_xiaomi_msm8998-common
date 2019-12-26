@@ -257,13 +257,15 @@ Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
             break;
         case PowerHint_1_2::CAMERA_LAUNCH:
             if (data > 0) {
-                mHintManager->DoHint("LAUNCH", std::chrono::milliseconds(data));
-                ALOGD("LAUNCH ON: %d MS", data);
+                mHintManager->DoHint("CAMERA_LAUNCH", std::chrono::milliseconds(data));
+                ALOGD("CAMERA LAUNCH ON: %d MS, LAUNCH ON: 2500 MS", data);
+                // boosts 2.5s for launching
+                mHintManager->DoHint("LAUNCH", std::chrono::milliseconds(2500));
             } else if (data == 0) {
-                mHintManager->EndHint("LAUNCH");
-                ALOGD("LAUNCH OFF");
+                mHintManager->EndHint("CAMERA_LAUNCH");
+                ALOGD("CAMERA LAUNCH OFF");
             } else {
-                ALOGE("LAUNCH INVALID DATA: %d", data);
+                ALOGE("CAMERA LAUNCH INVALID DATA: %d", data);
             }
             break;
         case PowerHint_1_2::CAMERA_STREAMING:
