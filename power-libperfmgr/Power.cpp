@@ -47,21 +47,10 @@ using ::android::hardware::Return;
 using ::android::hardware::Void;
 
 Power::Power() :
-        mHintManager(nullptr),
-        mInteractionHandler(nullptr),
-        mSustainedPerfModeOn(false),
-        mReady(false) {
-
-    mInitThread =
-            std::thread([this](){
-                            android::base::WaitForProperty(kPowerHalInitProp, "1");
-                            mHintManager = HintManager::GetFromJSON("/vendor/etc/powerhint.json");
-                            mInteractionHandler = std::make_unique<InteractionHandler>(mHintManager);
-                            mInteractionHandler->Init();
-                            // Now start to take powerhint
-                            mReady.store(true);
-                        });
-    mInitThread.detach();
+        mHintManager(HintManager::GetFromJSON("/vendor/etc/powerhint.json")),
+        mInteractionHandler(mHintManager),
+        mSustainedPerfModeOn(false) {
+    mInteractionHandler.Init();
 }
 
 // Methods from ::android::hardware::power::V1_0::IPower follow.
@@ -70,7 +59,7 @@ Return<void> Power::setInteractive(bool /* interactive */)  {
 }
 
 Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
-    if (!isSupportedGovernor() || !mReady) {
+    if (!isSupportedGovernor()) {
         return Void();
     }
 
@@ -80,7 +69,7 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
                 break;
             }
 
-            mInteractionHandler->Acquire(data);
+            mInteractionHandler.Acquire(data);
             break;
         case PowerHint_1_0::SUSTAINED_PERFORMANCE:
             if (data && mSustainedPerfModeOn) {
@@ -239,7 +228,7 @@ Return<void> Power::powerHintAsync(PowerHint_1_0 hint, int32_t data) {
 
 // Methods from ::android::hardware::power::V1_2::IPower follow.
 Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
-    if (!isSupportedGovernor() || !mReady) {
+    if (!isSupportedGovernor()) {
         return Void();
     }
 
