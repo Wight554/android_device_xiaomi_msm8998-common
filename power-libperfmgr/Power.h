@@ -42,8 +42,9 @@ using PowerHint_1_0 = ::android::hardware::power::V1_0::PowerHint;
 using PowerHint_1_2 = ::android::hardware::power::V1_2::PowerHint;
 using ::android::perfmgr::HintManager;
 
-class Power : public IPower {
-  public:
+constexpr char kPowerHalInitProp[] = "vendor.powerhal.init";
+
+struct Power : public IPower {
     // Methods from ::android::hardware::power::V1_0::IPower follow.
 
     Power();
@@ -62,7 +63,9 @@ class Power : public IPower {
 
     // Methods from ::android::hidl::base::V1_0::IBase follow.
 
-  private:
+ private:
+    static bool isSupportedGovernor();
+
     std::shared_ptr<HintManager> mHintManager;
     std::unique_ptr<InteractionHandler> mInteractionHandler;
     std::atomic<bool> mSustainedPerfModeOn;
