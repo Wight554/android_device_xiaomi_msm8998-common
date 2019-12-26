@@ -66,21 +66,17 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
     switch(hint) {
         case PowerHint_1_0::INTERACTION:
             if (mSustainedPerfModeOn) {
-                break;
+                ALOGV("%s: ignoring due to other active perf hints", __func__);
+            } else {
+                mInteractionHandler.Acquire(data);
             }
-
-            mInteractionHandler.Acquire(data);
             break;
         case PowerHint_1_0::SUSTAINED_PERFORMANCE:
-            if (data && mSustainedPerfModeOn) {
-                break;
-            }
-
-            if (data) {
+            if (data && !mSustainedPerfModeOn) {
                 ALOGD("SUSTAINED_PERFORMANCE ON");
                 mHintManager->DoHint("SUSTAINED_PERFORMANCE");
                 mSustainedPerfModeOn = true;
-            } else {
+            } else if (!data && mSustainedPerfModeOn) {
                 ALOGD("SUSTAINED_PERFORMANCE OFF");
                 mHintManager->EndHint("SUSTAINED_PERFORMANCE");
                 mSustainedPerfModeOn = false;
@@ -88,26 +84,27 @@ Return<void> Power::powerHint(PowerHint_1_0 hint, int32_t data) {
             break;
         case PowerHint_1_0::LAUNCH:
             if (mSustainedPerfModeOn) {
-                break;
-            }
-
-            if (data) {
-                mHintManager->DoHint("LAUNCH");
-                ALOGD("LAUNCH ON");
+                ALOGV("%s: ignoring due to other active perf hints", __func__);
             } else {
-                mHintManager->EndHint("LAUNCH");
-                ALOGD("LAUNCH OFF");
+                if (data) {
+                    // Hint until canceled
+                    mHintManager->DoHint("LAUNCH");
+                    ALOGD("LAUNCH ON");
+                } else {
+                    mHintManager->EndHint("LAUNCH");
+                    ALOGD("LAUNCH OFF");
+                }
             }
             break;
         default:
             break;
 
     }
-
     return Void();
 }
 
 Return<void> Power::setFeature(Feature /*feature*/, bool /*activate*/)  {
+    //Nothing to do
     return Void();
 }
 
@@ -153,6 +150,7 @@ Return<void> Power::getPlatformLowPowerStats(getPlatformLowPowerStats_cb _hidl_c
     state->totalTransitions = values[0];
     state->supportedOnlyInSuspend = false;
     state->voters.resize(VMIN_VOTERS);
+    //Note: No filling of state voters since VMIN_VOTERS = 0
 
 done:
     _hidl_cb(states, Status::SUCCESS);
@@ -199,9 +197,12 @@ Return<void> Power::getSubsystemLowPowerStats(getSubsystemLowPowerStats_cb _hidl
 
     subsystems.resize(SUBSYSTEM_COUNT);
 
+    //We currently have only one Subsystem for WLAN
     ret = get_wlan_low_power_stats(subsystems[SUBSYSTEM_WLAN]);
     if (ret != 0)
         goto done;
+
+    //Add query for other subsystems here
 
 done:
     _hidl_cb(subsystems, Status::SUCCESS);
@@ -213,16 +214,17 @@ bool Power::isSupportedGovernor() {
     if (android::base::ReadFileToString("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", &buf)) {
         buf = android::base::Trim(buf);
     }
-
-    if (buf != "schedutil" && buf != "sched") {
-        ALOGE("Governor not supported");
+    // Only support EAS 1.2, legacy EAS
+    if (buf == "schedutil" || buf == "sched") {
+        return true;
+    } else {
+        LOG(ERROR) << "Governor not supported by powerHAL, skipping";
         return false;
     }
-
-    return true;
 }
 
 Return<void> Power::powerHintAsync(PowerHint_1_0 hint, int32_t data) {
+    // just call the normal power hint in this oneway function
     return powerHint(hint, data);
 }
 
@@ -235,6 +237,7 @@ Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
     switch(hint) {
         case PowerHint_1_2::AUDIO_LOW_LATENCY:
             if (data) {
+                // Hint until canceled
                 mHintManager->DoHint("AUDIO_LOW_LATENCY");
                 ALOGD("AUDIO LOW LATENCY ON");
             } else {
@@ -244,6 +247,7 @@ Return<void> Power::powerHintAsync_1_2(PowerHint_1_2 hint, int32_t data) {
             break;
         case PowerHint_1_2::AUDIO_STREAMING:
             if (data) {
+                // Hint until canceled
                 mHintManager->DoHint("AUDIO_STREAMING");
                 ALOGD("AUDIO STREAMING ON");
             } else {

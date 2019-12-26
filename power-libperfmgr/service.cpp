@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "android.hardware.power@1.2-service.xiaomi_msm8998-libperfmgr"
+#define LOG_TAG "android.hardware.power@1.2-service.wahoo-libperfmgr"
 
 #include <android/log.h>
 #include <hidl/HidlTransportSupport.h>
@@ -25,33 +25,43 @@ using android::sp;
 using android::status_t;
 using android::OK;
 
+// libhwbinder:
 using android::hardware::configureRpcThreadpool;
 using android::hardware::joinRpcThreadpool;
 
+// Generated HIDL files
 using android::hardware::power::V1_2::IPower;
 using android::hardware::power::V1_2::implementation::Power;
 
-int main(int /* argc */, char** /* argv */) {
-    ALOGI("Power HAL is starting");
+int main() {
 
-    android::sp<IPower> service = new Power();
+    status_t status;
+    android::sp<IPower> service = nullptr;
+
+    ALOGI("Power HAL Service 1.2 for Wahoo is starting.");
+
+    service = new Power();
     if (service == nullptr) {
-        ALOGE("Could not create an instance of Power HAL");
-        return 1;
+        ALOGE("Can not create an instance of Power HAL Iface, exiting.");
+
+        goto shutdown;
     }
 
-    configureRpcThreadpool(1, true /* callerWillJoi n*/);
+    configureRpcThreadpool(1, true /*callerWillJoin*/);
 
-    status_t status = service->registerAsService();
+    status = service->registerAsService();
     if (status != OK) {
-        ALOGE("Could not register Power HAL service");
-        return 1;
+        ALOGE("Could not register service for Power HAL Iface (%d).", status);
+        goto shutdown;
     }
 
-    ALOGI("Power HAL service is ready");
+    ALOGI("Power Service is ready");
     joinRpcThreadpool();
+    //Should not pass this line
 
+shutdown:
     // In normal operation, we don't expect the thread pool to exit
-    ALOGE("Power HAL service is shutting down");
+
+    ALOGE("Power Service is shutting down");
     return 1;
 }
